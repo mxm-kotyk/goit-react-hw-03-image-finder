@@ -1,8 +1,8 @@
 {
-  "name": "webpack-react-template",
+  "name": "goit-react-hw-03-image-finder",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://mxm-kotyk.github.io/webpack-react-template",
+  "homepage": "https://mxm-kotyk.github.io/goit-react-hw-03-image-finder",
   "dependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
