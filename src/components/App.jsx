@@ -14,52 +14,64 @@ export class App extends Component {
     isLoading: false,
     page: 1,
     error: null,
+    totalImages: 0,
   };
 
   async componentDidUpdate(_, prevState) {
     const { searchQuery, page } = this.state;
-    if (prevState.searchQuery !== searchQuery) {
-      const searchResult = await this.getSearchResult(searchQuery, page);
-      this.setState({ images: searchResult });
-    }
 
-    if (prevState.page !== page && page !== 1) {
-      const searchResult = await this.getSearchResult(searchQuery, page);
-      this.setState(pState => ({
-        images: [...pState.images, ...searchResult],
-      }));
+    try {
+      if (prevState.searchQuery !== searchQuery) {
+        this.setState({ images: [] });
+        const searchResult = await this.getSearchResult(searchQuery, page);
+        this.setState({ images: searchResult });
+      }
+
+      if (prevState.page !== page && page !== 1) {
+        const searchResult = await this.getSearchResult(searchQuery, page);
+        this.setState(pState => ({
+          images: [...pState.images, ...searchResult],
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+      this.setState({ error: error.message });
     }
   }
 
   getSearchResult = async (searchQuery, page) => {
     this.setState({ isLoading: true });
     const result = await API.getImages(searchQuery, page);
-    this.setState({ isLoading: false });
+    this.setState({ isLoading: false, totalImages: result.total });
     return result.hits;
   };
 
   handleSubmit = searchQuery => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
     this.setState({ searchQuery, page: 1 });
   };
 
   handleLoadMore = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
+    console.log(this.state.images.length === this.state.totalImages);
   };
 
   render() {
+    const { images, isLoading, error, totalImages } = this.state;
+    const { handleSubmit, handleLoadMore } = this;
+
     return (
       <AppWrapper>
-        <Searchbar onSubmit={this.handleSubmit} />
-        <ImageGallery images={this.state.images} />
+        <Searchbar onSubmit={handleSubmit} />
+        <ImageGallery images={images} />
         <CenteredContainer>
-          {this.state.images.length !== 0 && (
-            <LoadMoreButton onClick={this.handleLoadMore} />
+          {isLoading ? (
+            <Loader />
+          ) : (
+            images.length !== 0 &&
+            images.length !== totalImages && (
+              <LoadMoreButton onClick={handleLoadMore} />
+            )
           )}
-          {this.state.isLoading && <Loader />}
         </CenteredContainer>
         {/* <Modal /> */}
       </AppWrapper>

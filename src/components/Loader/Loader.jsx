@@ -5,9 +5,8 @@ export const Loader = () => {
     <>
       <BarLoader
         color="#3f51b5"
-        // loading={loading}
-        // cssOverride={override}
-        size={150}
+        width={150}
+        height={10}
         aria-label="Loading Spinner"
       />
     </>
