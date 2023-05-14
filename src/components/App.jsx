@@ -56,7 +56,7 @@ export class App extends Component {
   };
 
   render() {
-    const { images, isLoading, error, totalImages } = this.state;
+    const { images, isLoading, totalImages } = this.state;
     const { handleSubmit, handleLoadMore } = this;
 
     return (
