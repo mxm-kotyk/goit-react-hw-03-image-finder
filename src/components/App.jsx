@@ -16,48 +16,38 @@ export class App extends Component {
     error: null,
   };
 
-  incrementPage = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  resetPage = () => {
-    this.setState({ page: 1 });
-  };
-
-  handleSubmit = async searchQuery => {
-    this.resetPage();
-    this.setState({
-      searchQuery,
-      isLoading: true,
-    });
-
-    try {
-      const result = await API.getImages(searchQuery, this.state.page);
-      this.setState({ images: result.hits });
-    } catch (error) {
-      console.log(error);
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ isLoading: false });
+  async componentDidUpdate(_, prevState) {
+    const { searchQuery, page } = this.state;
+    if (prevState.searchQuery !== searchQuery) {
+      const searchResult = await this.getSearchResult(searchQuery, page);
+      this.setState({ images: searchResult });
     }
-  };
 
-  handleLoadMore = async () => {
-    this.incrementPage();
+    if (prevState.page !== page && page !== 1) {
+      const searchResult = await this.getSearchResult(searchQuery, page);
+      this.setState(pState => ({
+        images: [...pState.images, ...searchResult],
+      }));
+    }
+  }
+
+  getSearchResult = async (searchQuery, page) => {
     this.setState({ isLoading: true });
+    const result = await API.getImages(searchQuery, page);
+    this.setState({ isLoading: false });
+    return result.hits;
+  };
 
-    try {
-      const result = await API.getImages(
-        this.state.searchQuery,
-        this.state.page + 1
-      );
-      this.setState(state => ({ images: [...state.images, ...result.hits] }));
-    } catch (error) {
-      console.log(error);
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ isLoading: false });
-    }
+  handleSubmit = searchQuery => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+    this.setState({ searchQuery, page: 1 });
+  };
+
+  handleLoadMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
