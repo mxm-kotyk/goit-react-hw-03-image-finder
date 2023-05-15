@@ -4,8 +4,7 @@ import { Searchbar } from './Searchbar';
 import { ImageGallery } from './ImageGallery';
 import { LoadMoreButton } from './LoadMoreButton';
 import { Loader } from './Loader';
-// import { Modal } from './Modal/Modal';
-import * as API from './pixabay-api/pixabay-api';
+import * as API from './services/pixabay-api';
 
 export class App extends Component {
   state = {
@@ -32,9 +31,14 @@ export class App extends Component {
         this.setState(pState => ({
           images: [...pState.images, ...searchResult],
         }));
+        setTimeout(() => {
+          window.scrollBy({
+            top: 510,
+            behavior: 'smooth',
+          });
+        }, 150);
       }
     } catch (error) {
-      console.log(error);
       this.setState({ error: error.message });
     }
   }
@@ -52,28 +56,36 @@ export class App extends Component {
 
   handleLoadMore = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
-    console.log(this.state.images.length === this.state.totalImages);
   };
 
   render() {
-    const { images, isLoading, totalImages } = this.state;
+    const { images, isLoading, totalImages, searchQuery, error } = this.state;
     const { handleSubmit, handleLoadMore } = this;
+
+    let infoBlock = error ? (
+      <h2>
+        Ooops, something went wrong... Server says: "{error}". Try reloading the
+        page.
+      </h2>
+    ) : isLoading ? (
+      <Loader />
+    ) : images.length === 0 ? (
+      searchQuery !== '' && (
+        <h2>
+          Sorry, there are no images matching "{searchQuery}". Please try again.
+        </h2>
+      )
+    ) : images.length === totalImages ? (
+      <h2>We're sorry, but you've reached the end of search results.</h2>
+    ) : (
+      <LoadMoreButton onClick={handleLoadMore} />
+    );
 
     return (
       <AppWrapper>
         <Searchbar onSubmit={handleSubmit} />
         <ImageGallery images={images} />
-        <CenteredContainer>
-          {isLoading ? (
-            <Loader />
-          ) : (
-            images.length !== 0 &&
-            images.length !== totalImages && (
-              <LoadMoreButton onClick={handleLoadMore} />
-            )
-          )}
-        </CenteredContainer>
-        {/* <Modal /> */}
+        <CenteredContainer>{infoBlock}</CenteredContainer>
       </AppWrapper>
     );
   }
